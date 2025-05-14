@@ -1,3 +1,4 @@
+-- Детализация
 truncate table nrpz.erc_${year}_data_list;
 insert into nrpz.erc_${year}_data_list
 select		eo.orgtitle grbstitle, --ГРБС
