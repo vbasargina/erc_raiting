@@ -14,8 +14,6 @@ Insert into nrpz.erc_${year}_checkresult_base
 	org_inn,
 	org_spz,
 	checksubjects_type,
-	ch.sub_fullname,
-	ch.sub_inn,
 	ch.ttpoperator
 From 
 	(Select 
@@ -43,8 +41,6 @@ From
 							When ch.regnumber Is Not Null Then ch.regnumber When length(ch.checkresultnumber)>=3 Then ch.checkresultnumber Else Null End 
 							Order By ch.publishdate Desc,ch.RESULT
 							) rn,
-		ch.sub_fullname,
-		ch.sub_inn,
 		nullif(ch.ttpoperator, '') ttpoperator
 	From nrpz.dwh_checkresult_nrpz_acgz  ch
 	Inner Join (Select 
