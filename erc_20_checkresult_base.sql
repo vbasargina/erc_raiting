@@ -13,7 +13,6 @@ Insert into nrpz.erc_${year}_checkresult_base
 	org_name,
 	org_inn,
 	org_spz,
-	checksubjects_type,
 	ch.ttpoperator
 From 
 	(Select 
@@ -30,7 +29,6 @@ From
 		ch.checksubjects_fullname org_name,
 		ch.checksubjects_inn org_inn, /*не всегда есть*/
 		coalesce(ch.checksubjects_regnum,org.spz) org_spz, /*не всегда есть*/
-		ch.checksubjects_type,
 		Row_number() OVER (Partition By 
 							Case 
 							When ch.complaint_regnumber Is Not Null Then ch.complaint_regnumber Else ch.COMPLAINTNUMBER	End,
@@ -52,8 +50,6 @@ From
 		ch.NAME Not In('ns2:checkResultCancel', 'checkResultCancel')
 		And (ch.publishdate>=To_date('${budget_date}', 'YYYY-MM-DD'))  --дата принятия бюджета СПб
 		And (ch.publishdate<To_date('${date}','yyyy-mm-dd')) 
-		And ch.flag_erc Is Null 
-		And coalesce(ch.checksubjects_type,'1') Not In  ('EPNew')
 		And coalesce(ch.RESULT,'0') Not In  ('COMPLAINT_NO_VIOLATIONS','NO_VIOLATIONS','COMPLAINT_NO_VIOLATIONS_LAW')
 	)ch
 left Join 
@@ -88,6 +84,9 @@ delete
 FROM nrpz.erc_${year}_checkresult_base
 where ttpoperator is not NULL OR ttpoperator = ''; --01.10.24 где субъект контроля "Оператор электронной площадки"
 
+
+DELETE FROM nrpz.erc_${year}_checkresult_base
+WHERE com_number in ('202500100161005696', '202500100161005607'); -- 01.04.25 правка 5.2: исключить 2 жалобы
 
 DELETE FROM nrpz.erc_${year}_checkresult_base
 WHERE com_number in ('202500100161005696', '202500100161005607'); -- 01.04.25 правка 5.2: исключить 2 жалобы
