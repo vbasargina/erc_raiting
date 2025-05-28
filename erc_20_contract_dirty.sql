@@ -56,10 +56,6 @@ c.id,
 c.positionnumber,
 c.pricetype,
 date_trunc('day', c.executions_date) executions_date,
-Case 
-	When c.changetype_tag = 'contractchange' Then 1 
-	Else 0 End modif,	
-c.changereason modif_reason,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
@@ -124,10 +120,6 @@ c.id,
 c.positionnumber,
 c.pricetype,
 date_trunc('day', c.executions_date) executions_date,
-Case 
-	When c.changetype_tag = 'contractchange' Then 1 
-	Else 0 End modif,	
-c.changereason modif_reason,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
@@ -157,8 +149,6 @@ notice As
 	c.protocoldate,
 	c.price,
 	c.currency,
-	c.modif,	
-	c.modif_reason,
 	c.stage,		
 	c.executionperiod_start,
 	c.executionperiod_end,
@@ -227,7 +217,7 @@ cn AS (Select
 				 From nrpz.dwh_contract_notice_nrpz_acgz cn 
 				 Where cn.name like '%contract' 
 				 And cn.publishdate < to_date('${date2}','yyyy-mm-dd')
-				 And cn.changetype_tag = 'contractChange' 
+				 And cn.changetype_tag IS NOT null 
 				)s 
 			Group By rnk
 			),
@@ -356,8 +346,6 @@ Select
 	n_first.price,
 	n_last.price price_cur,
 	n_first.currency,
-	n_last.modif,	
-	n_last.modif_reason,
 	coalesce(c_proc.stage, n_last.stage) stage,
 	coalesce(n_first.executions_date, c_proc.executions_date)executions_date,
 	c_proc.rejected_date, 
