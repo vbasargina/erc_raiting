@@ -87,6 +87,3 @@ where ttpoperator is not NULL OR ttpoperator = ''; --01.10.24 где субъе�
 
 DELETE FROM nrpz.erc_${year}_checkresult_base
 WHERE com_number in ('202500100161005696', '202500100161005607'); -- 01.04.25 правка 5.2: исключить 2 жалобы
-
-DELETE FROM nrpz.erc_${year}_checkresult_base
-WHERE com_number in ('202500100161005696', '202500100161005607'); -- 01.04.25 правка 5.2: исключить 2 жалобы
