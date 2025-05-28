@@ -154,7 +154,6 @@ notice As
 	coalesce(n.joflag,0) joflag,
 	s.org_kgntv org_kgntv_schedule,
 	c.id,
-	c_ais.ikz ikz_ais, 
 	c.positionnumber,
 	c.pricetype,
 	c.executions_date,
@@ -170,7 +169,6 @@ notice As
  Left Join nrpz.contract_single_supp_reasons rs On rs.code_oos = c.singlecustomer And rs.actual = '1'
  Left Join (Select
 				c.contractrnk rnk,
-				min(p.pg_ikz) ikz,
 				c.lotid, --правки от 30.06.23 добавить lot id
 				p.requestid,
    				is_structured_form --правки от 01.10.24
@@ -319,8 +317,6 @@ Select
 	n_first.rnk_number,
 	n_first.ikz,
 	n_first.grbsid,
-	n_first.schedule_year,
-	n_first.ikz_ais,
 	n_first.signdate, 
 	n_first.publishdate publishdate_first,
 	n_last.publishdate publishdate_last,
