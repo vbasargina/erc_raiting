@@ -35,16 +35,12 @@ c.singlecustomer_name,
 c.schedule_year,
 c.protocoldate,
 c.price,
-c.currency,
 	Case 
 		When c.currentcontractstage = 'e' Then 'исполнение'
 		When c.currentcontractstage = 'et' Then 'исполнение прекращено'
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
-	date_trunc('day',c.executionperiod_start) executionperiod_start,
-	date_trunc('day',c.executionperiod_end) executionperiod_end,
-c.supplier_type,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -99,16 +95,12 @@ c.singlecustomer_name,
 c.schedule_year,
 c.protocoldate,
 c.price,
-c.currency,
 	Case 
 		When c.currentcontractstage = 'e' Then 'исполнение'
 		When c.currentcontractstage = 'et' Then 'исполнение прекращено'
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
-	date_trunc('day',c.executionperiod_start) executionperiod_start,
-	date_trunc('day',c.executionperiod_end) executionperiod_end,
-c.supplier_type,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -148,11 +140,7 @@ notice As
 	c.schedule_year,
 	c.protocoldate,
 	c.price,
-	c.currency,
 	c.stage,		
-	c.executionperiod_start,
-	c.executionperiod_end,
-	c.supplier_type,
 	c.supplier_fullname,
 	c.supplier_inn,
 	c.supplier_kpp,
@@ -345,7 +333,6 @@ Select
 	n_first.protocoldate,
 	n_first.price,
 	n_last.price price_cur,
-	n_first.currency,
 	coalesce(c_proc.stage, n_last.stage) stage,
 	coalesce(n_first.executions_date, c_proc.executions_date)executions_date,
 	c_proc.rejected_date, 
@@ -355,9 +342,6 @@ Select
 	c_proc.penalties_type,
 	c_proc.penalties_party,
 	c_proc.penalties_amount,			
-	n_first.executionperiod_start,
-	n_last.executionperiod_end,
-	n_first.supplier_type,
 	n_first.supplier_fullname supplier_fullname,
 	n_first.supplier_inn,
 	n_first.supplier_kpp,
