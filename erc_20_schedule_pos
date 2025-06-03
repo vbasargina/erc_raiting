@@ -1,0 +1,64 @@
+Truncate Table  nrpz.erc_${year}_schedule_pos;
+Insert into nrpz.erc_${year}_schedule_pos 
+Select DISTINCT ON (pos.positionnumber)
+		plan_.org_name, 
+		plan_.org_inn, 
+		plan_.org_spz,
+		plan_.org_kgntv, 
+        plan_.grbsid,
+		plan_.plannumber,
+		pos.versionnumber, 
+		pos.publishdate,
+		Case 
+		When plan_.versionnumber = pos.versionnumber And plan_.publishdate =pos.publishdate Then 1 Else 0 End flah_act_version,
+		pos.type_position, 
+		pos.positionnumber, 
+		pos.ikz, 
+		pos.purchaseobjectinfo ,
+		pos.finance_total,
+        pos.finance_currentyear,
+        pos.finance_firstyear,
+		pos.purchasecanceled,
+		pos.specialpurchase_type_name As specialpurchase_type,
+		0 modiff_all		
+	From nrpz.dwh_tenderplan_20_acgz pos
+	Inner Join nrpz.erc_${year}_schedule plan_ On (plan_.org_name =pos.customer_fullname  
+									And plan_.org_inn =pos.customer_inn 
+									And plan_.org_spz =pos.customer_regnum
+									And plan_.plannumber =pos.plannumber
+									And plan_.versionnumber=pos.versionnumber)
+	ORDER BY pos.positionnumber, pos.versionnumber Desc, pos.publishdate Desc
+;
+
+UPDATE nrpz.erc_${year}_schedule_pos t
+SET modiff_all= m.modiff_all
+FROM (Select ikz,Sum(modiff_all) modiff_all
+	  From nrpz.erc_${year}_schedule_pos_modif
+	  Group By ikz)m 
+WHERE m.ikz=t.ikz
+;
+
+
+/*
+-- код на добавление ло и москвы в случае если их нет в источнике
+insert into ERC_${year}_SCHEDULE_POS
+    select 
+        orgname,
+        orginn,
+        orgcode,
+        orgid,
+        pg_n,
+        schedule_version,
+        null,
+        case when special_type is null then 'position' else null end type_position,
+        pg_rn,
+        pg_ikz,
+        fin_position_all,
+        null,
+        special_type_pg,
+        null,
+        1
+from dwh_schedule_pos_2020_kgntv
+where orginn in ('4704022897','4719007588','4719023340','7806103879','7825666740','4719008550','4719007891','4705007122','4710023627','7826057885','7703511435','4716044430','7817007454')
+and (schedule_version,pg_n) in (select max(schedule_version),pg_n from dwh_schedule_pos_2020_kgntv group by pg_n);
+*/
