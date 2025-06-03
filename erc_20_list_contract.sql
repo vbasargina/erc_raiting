@@ -26,7 +26,8 @@ WITH con as (SELECT con.rnk,
 				con.penalties_type,
 				con.penalties_party,
 				con.penalties_amount,
-				con.executionperiod_end,
+				con.executionperiod_end ,
+				con.supplier_type,
 				con.supplier_fullname,
 				con.supplier_inn,
 				con.supplier_kpp,
@@ -128,6 +129,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -225,6 +227,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -322,6 +325,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -419,6 +423,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -517,6 +522,7 @@ Select
 	NULL penalties_party,
 	Null::NUMERIC(24,4) penalties_amount,
 	NULL::timestamp plan_execution_date_con,
+	NULL supplier_type,
 	NULL supplier_fullname,
 	NULL supplier_inn,
 	NULL supplier_kpp,
@@ -543,7 +549,7 @@ From nrpz.erc_${year}_list sch
 inner join nrpz.erc_dwh_organization_kgntv dok on sch.org_kgntv = dok.id
 inner join nrpz.erc_dwh_organization_kgntv dokgrbs on dokgrbs.id = dok.parentid and dokgrbs.id <> 3039
 inner join nrpz.ERC_ORGANIZATION eo   on eo.spz = dokgrbs.spz
-LEFT JOIN nrpz.erc_dwh_procedures_kgntv_${srez_number}_6 p ON sch.reqnum = p.reqnum
+LEFT JOIN nrpz.erc_dwh_procedures_kgntv_${srez_number} p ON sch.reqnum = p.reqnum
 Left Join contracts con_1 On (sch.joflag = 1 And con_1.notificationnumber = sch.reqnum And con_1.lotnumber = sch.lotnumber) --извещения совм. 3 блок
 Left Join contracts con_2 On (sch.joflag = 0 And con_2.notificationnumber = sch.reqnum And con_2.lotnumber = sch.lotnumber) --извещения несовм. 1 блок
 Left Join contracts con_3 on (con_3.ikz = sch.ikz And sch.reqnum Is Null) --контракты из плана-графика, то есть ед.поставщик 2 блок
@@ -621,6 +627,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -719,6 +726,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -744,8 +752,8 @@ From nrpz.erc_${year}_contract con
 Inner Join nrpz.erc_dwh_organization_kgntv o On con.org_spz = o.spz And o.id not in (3039,2913,31344,2998,3020,2901,3024,2994,7817,3774,29714,3127,3128,3132,3133,2147,3011,1556,10288,87212,1610)
 Inner Join nrpz.erc_dwh_organization_kgntv dokgrbs   On dokgrbs.id = o.parentid -- And dokgrbs.id <> 3039 хз нужен этот грбс или нет в рейтинге не учитывается 
 Inner Join nrpz.erc_organization eo   On eo.spz = dokgrbs.spz 
-Inner Join nrpz.erc_dwh_contract_kgntv_${srez_number}_6 cont On cont.contractrnk=con.rnk
-Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number}_6 proc On proc.lotuuid::int4=cont.lotid
+Inner Join nrpz.erc_dwh_contract_kgntv_${srez_number} cont On cont.contractrnk=con.rnk
+Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} proc On proc.lotuuid::int4=cont.lotid
 Inner Join nrpz.erc_${year}_schedule_pos sch On sch.ikz=proc.pg_ikz And con.notificationnumber Is Null And con.positionnumber Is Null
 Left Join nrpz.erc_${year}_list_contract t On t.rnk=con.rnk
 Where t.rnk Is Null And date_trunc('day', con.signdate) < to_date('${date}','yyyy-mm-dd'); --контракты из среза, если вдруг не попали ранее
@@ -820,6 +828,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
+	con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -878,6 +887,7 @@ penalties_type=null,
 penalties_party=null,
 penalties_amount=null,
 plan_execution_date_con=null,
+supplier_type=null,
 supplier_fullname=null,
 supplier_inn=null,
 supplier_kpp=null,
