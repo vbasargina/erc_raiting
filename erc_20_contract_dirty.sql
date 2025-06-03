@@ -172,8 +172,8 @@ notice As
 				c.lotid, --правки от 30.06.23 добавить lot id
 				p.requestid,
    				is_structured_form --правки от 01.10.24
-			From nrpz.erc_dwh_contract_kgntv_${srez_number}_6 c  
-			Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number}_6 p On (c.lotid = p.lotuuid::int4)
+			From nrpz.erc_dwh_contract_kgntv_${srez_number} c  
+			Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} p On (c.lotid = p.lotuuid::int4)
 			Group By c.contractrnk,c.lotid,is_structured_form,p.requestid
 			)c_ais On (c_ais.rnk = c.rnk)
 Left Join (Select 
