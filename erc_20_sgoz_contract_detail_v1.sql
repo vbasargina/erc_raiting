@@ -3,6 +3,13 @@
 
 Truncate Table nrpz.erc_${year}_sgoz_contract_detail_v1;
 Insert into nrpz.erc_${year}_sgoz_contract_detail_v1
+WITH fact as (
+SELECT lot_id, contractrnk, YEAR, targetexpenseitemcode,budget_type,expensetypecode, kosgucode,fund_code,req_code,AIP_CODE, subsection,
+sum(finsum) finsum_f
+FROM nrpz.erc_dwh_kf_con_payment_${srez_number}
+WHERE YEAR = 2025
+GROUP BY lot_id, contractrnk, YEAR, targetexpenseitemcode,budget_type,expensetypecode, kosgucode,fund_code,req_code,AIP_CODE, subsection
+)
 Select fin.customerinn,
 	   fin.customername,
 	   fin.grbsname,
@@ -15,8 +22,7 @@ Select fin.customerinn,
        fin.pg_rn,
        fin.finsum,
        fin.finsum_f, fin.targetexpenseitemcode, fin.cvr, fin.kosgu,
-       CASE WHEN date_trunc('day',CONTRACTREJECTDATE)>=to_date('${date}','YYYY-MM-DD') THEN finsum
-                        WHEN CONTRACTREJECTDATE is NOT NULL THEN finsum_f ELSE finsum end fin_now
+       finsum fin_now
 From
       (
          select distinct dok.id, dok.inn
@@ -45,14 +51,16 @@ From
                       SELECT fin.LOT_ID, fin.targetexpenseitemcode, fin.expensetypecode cvr, coalesce(fin.kosgucode,lsr.kosgu) kosgu,
                              case when fin.type=1 then fin.FINSUM end finsum,
                              case when fin.type=2 then fin.FINSUM end finsum_f
-                      FROM (SELECT CONTRACT,LOT_ID,FINSUM,BSUM,OBSUM, MONTH, YEAR,SUPPLIER_ID,DOC_NAME,DOC_NUMBER,DOC_DATE,TYPE,PRODUCT,ECONOMICCODE,TARGETEXPENSEITEMCODE,EXPENSESNUMERATION,SUBSECTION,EXPENSETYPECODE,EXPENSETYPENAME,FUND_CODE,GRBS_CODE,KOSGUCODE,KOSGUTITLE,DESCRIPTION,EXP_ACCOUNT,BUDGET_TYPE,FINSOURCE,YEAR_ACCEPT,BUDGET_ID,SUPPLIER_INN,STAGE_ID,PUBLISHED,IMPROPER_EXECUTION_TEXT,FULFILMENT_SUM_RUR,DELIVERY_ACCEPT_DATE,IS_DONE,CUSTOMER_INN,PAY_DOC_NAME,EIS_DATE,DOC_TYPE,max(AIP_CODE) AIP_CODE,max(AIP_NAME) AIP_NAME,sum(FULFILMENT_SUM) FULFILMENT_SUM ,INN,REQ_CODE
-		              		FROM nrpz.ERC_DWH_CONTRACT_FIN_KG_${srez_number}_f1
-		              		WHERE YEAR = 20${year} 
-		                    GROUP BY CONTRACT,LOT_ID,FINSUM,BSUM,OBSUM,MONTH,YEAR,SUPPLIER_ID,DOC_NAME,DOC_NUMBER,DOC_DATE,TYPE,PRODUCT,ECONOMICCODE,TARGETEXPENSEITEMCODE,EXPENSESNUMERATION,SUBSECTION,EXPENSETYPECODE,EXPENSETYPENAME,FUND_CODE,GRBS_CODE,KOSGUCODE,KOSGUTITLE,DESCRIPTION,EXP_ACCOUNT,BUDGET_TYPE,FINSOURCE,YEAR_ACCEPT,BUDGET_ID,SUPPLIER_INN,STAGE_ID,PUBLISHED,IMPROPER_EXECUTION_TEXT,FULFILMENT_SUM_RUR,DELIVERY_ACCEPT_DATE,IS_DONE,CUSTOMER_INN,PAY_DOC_NAME,EIS_DATE,DOC_TYPE,INN,REQ_CODE
-                      		) fin
-                      Join nrpz.ERC_DWH_CONTRACT_KGNTV_${srez_number}_f1  сont on сont.contractid=fin.contract
+                      FROM nrpz.erc_dwh_kf_con_payment_${srez_number} fin
+                      Join nrpz.erc_dwh_con1_kgntv_${srez_number}  сont on сont.contractid=fin.contract
                       Join nrpz.erc_dwh_organization_kgntv org On org.inn=сont.customerinn
                       Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.expensesnumeration
+                      LEFT JOIN fact ON fact.lot_id = fin.lot_id AND fact.year = fin.year 
+                      AND fact.targetexpenseitemcode = fin.targetexpenseitemcode 
+                      AND fact.budget_type = fin.budget_type AND fact.expensetypecode = fin.cvr
+                      AND fact.kosgucode = fin.kosgucode AND COALESCE(fact.aip_code, '0') = COALESCE(fin.aip_code, '0') 
+                      AND fact.subsection = fin.subsection AND COALESCE(fact.fund_code, '0') = COALESCE(fin.fund_code, '0')
+                      AND COALESCE(fact.req_code, '0') = COALESCE(fin.req_code, '0')                      
                       WHERE fin.budget_type IN ('СИЦ','СГЗ')
                         AND fin.YEAR = 20${year} -- 01.04.25 имеется финансирование на текущий финансовый год
                         AND org.role_code IN (10,3) --роль автономных и бюджетных учреждений
@@ -66,14 +74,16 @@ From
                       SELECT fin.LOT_ID, fin.targetexpenseitemcode,fin.expensetypecode cvr,coalesce(fin.kosgucode,lsr.kosgu) kosgu,
                              case when fin.type=1 then fin.FINSUM end finsum,
                              case when fin.type=2 then fin.FINSUM end finsum_f
-                      FROM (SELECT CONTRACT,LOT_ID,FINSUM,BSUM,OBSUM, MONTH, YEAR,SUPPLIER_ID,DOC_NAME,DOC_NUMBER,DOC_DATE,TYPE,PRODUCT,ECONOMICCODE,TARGETEXPENSEITEMCODE,EXPENSESNUMERATION,SUBSECTION,EXPENSETYPECODE,EXPENSETYPENAME,FUND_CODE,GRBS_CODE,KOSGUCODE,KOSGUTITLE,DESCRIPTION,EXP_ACCOUNT,BUDGET_TYPE,FINSOURCE,YEAR_ACCEPT,BUDGET_ID,SUPPLIER_INN,STAGE_ID,PUBLISHED,IMPROPER_EXECUTION_TEXT,FULFILMENT_SUM_RUR,DELIVERY_ACCEPT_DATE,IS_DONE,CUSTOMER_INN,PAY_DOC_NAME,EIS_DATE,DOC_TYPE,max(AIP_CODE) AIP_CODE,max(AIP_NAME) AIP_NAME,sum(FULFILMENT_SUM) FULFILMENT_SUM ,INN,REQ_CODE
-		              		FROM nrpz.ERC_DWH_CONTRACT_FIN_KG_${srez_number}_f1
-		              		WHERE YEAR = 20${year}
-		                    GROUP BY CONTRACT,LOT_ID,FINSUM,BSUM,OBSUM,MONTH,YEAR,SUPPLIER_ID,DOC_NAME,DOC_NUMBER,DOC_DATE,TYPE,PRODUCT,ECONOMICCODE,TARGETEXPENSEITEMCODE,EXPENSESNUMERATION,SUBSECTION,EXPENSETYPECODE,EXPENSETYPENAME,FUND_CODE,GRBS_CODE,KOSGUCODE,KOSGUTITLE,DESCRIPTION,EXP_ACCOUNT,BUDGET_TYPE,FINSOURCE,YEAR_ACCEPT,BUDGET_ID,SUPPLIER_INN,STAGE_ID,PUBLISHED,IMPROPER_EXECUTION_TEXT,FULFILMENT_SUM_RUR,DELIVERY_ACCEPT_DATE,IS_DONE,CUSTOMER_INN,PAY_DOC_NAME,EIS_DATE,DOC_TYPE,INN,REQ_CODE
-                      		) fin
-                      Join nrpz.ERC_DWH_CONTRACT_KGNTV_${srez_number}_f1  сont on сont.contractid=fin.contract and сont.customerinn=fin.customer_inn
+                      FROM nrpz.erc_dwh_kf_con_payment_${srez_number} fin
+                      Join nrpz.erc_dwh_con1_kgntv_${srez_number}  сont on сont.contractid=fin.contract and сont.customerinn=fin.customer_inn
                       Join nrpz.erc_dwh_organization_kgntv org On org.inn=сont.customerinn
                       Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.expensesnumeration
+                      LEFT JOIN fact ON fact.lot_id = fin.lot_id AND fact.year = fin.year 
+                      AND fact.targetexpenseitemcode = fin.targetexpenseitemcode 
+                      AND fact.budget_type = fin.budget_type AND fact.expensetypecode = fin.cvr
+                      AND fact.kosgucode = fin.rs AND COALESCE(fact.aip_code, '0') = COALESCE(fin.aip_code, '0')
+                      AND fact.subsection = fin.subsection AND COALESCE(fact.fund_code, '0') = COALESCE(fin.fund_code, '0') 
+                      AND COALESCE(fact.req_code, '0') = COALESCE(fin.req_code, '0')
                       WHERE fin.budget_type IN ('BUD')  
                       	AND fin.YEAR = 20${year} -- 01.04.25 имеется финансирование на текущий финансовый год
 	                    AND org.role_code IN (1,8) --ИОГВ+ГКУ
@@ -87,7 +97,7 @@ From
                       )   
                 where finsum is not null    
               ) tar
-      	  join  nrpz.ERC_DWH_CONTRACT_KGNTV_${srez_number}_f1 con ON con.LOTID = tar.LOT_ID 
+      	  join  nrpz.erc_dwh_con1_kgntv_${srez_number}  con ON con.LOTID = tar.LOT_ID 
       													and stagetitle <> 'Контракт недействителен' 
       													and con.contractsigndate<to_date('${date}','YYYY-MM-DD')
       													AND con.contractsigndate>=to_date('${start_date}','yyyy-mm-dd') -- 01.04.25 контракт заключен в отчетном периоде по плану-графику текущего финансового года
