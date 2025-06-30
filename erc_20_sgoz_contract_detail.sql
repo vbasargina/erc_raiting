@@ -25,7 +25,7 @@ Select fin.customerinn,
        fin.targetexpenseitemcode, 
        fin.cvr, 
        fin.kosgu,
-       fin.finsum
+       fin.finsum fin_before
 From
       (
          select distinct dok.id, dok.inn
