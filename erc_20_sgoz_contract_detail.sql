@@ -6,7 +6,7 @@ Insert into nrpz.erc_${year}_sgoz_contract_detail
 WITH fact as (
 SELECT lot_id, contractrnk, YEAR, targetexpenseitemcode,budget_type,expensetypecode, kosgucode,fund_code,req_code,AIP_CODE, subsection,
 sum(finsum) finsum_f
-FROM nrpz.erc_dwh_kf_con_payment_${srez_number}
+FROM nrpz.erc_dwh_con_payments_kg_${srez_number}
 WHERE YEAR = 2025
 GROUP BY lot_id, contractrnk, YEAR, targetexpenseitemcode,budget_type,expensetypecode, kosgucode,fund_code,req_code,AIP_CODE, subsection
 )
@@ -59,13 +59,13 @@ left join
                        LOT_ID, targetexpenseitemcode, cvr, kosgu,
                        sum(finsum) AS finsum, max(finsum_f) AS finsum_f
                 from (--ГБУ
-                      SELECT fin.LOT_ID, fin.targetexpenseitemcode, fin.expensetypecode cvr, coalesce(fin.kosgucode,lsr.kosgu) kosgu,
+                      SELECT fin.LOT_ID, fin.targetexpenseitemcode, fin.cvr cvr, coalesce(fin.kosgucode,lsr.kosgu) kosgu,
                              fin.sumi finsum,
                              fact.finsum_f
                       FROM nrpz.erc_dwh_kf_con_payment_${srez_number} fin
-                      Join nrpz.erc_dwh_con1_kgntv_${srez_number}  сont on сont.contractid=fin.contract
+                      Join nrpz.erc_dwh_con1_kgntv_${srez_number}  сont on сont.lotid=fin.lot_id
                       Join nrpz.erc_dwh_organization_kgntv org On org.inn=сont.customerinn
-                      Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.expensesnumeration
+                      Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.cvr
                       LEFT JOIN fact ON fact.lot_id = fin.lot_id AND fact.year = fin.year 
                       AND fact.targetexpenseitemcode = fin.targetexpenseitemcode 
                       AND fact.budget_type = fin.budget_type AND fact.expensetypecode = fin.cvr
@@ -82,13 +82,13 @@ left join
                       union all
                       
                       -- ИОГВ и ГКУ
-                      SELECT fin.LOT_ID, fin.targetexpenseitemcode,fin.expensetypecode cvr,coalesce(fin.kosgucode,lsr.kosgu) kosgu,
+                      SELECT fin.LOT_ID, fin.targetexpenseitemcode,fin.cvr cvr,coalesce(fin.kosgucode,lsr.kosgu) kosgu,
                              fin.sumi finsum,
                              fact.finsum_f
                       FROM nrpz.erc_dwh_kf_con_payment_${srez_number} fin
-                      Join nrpz.erc_dwh_con1_kgntv_${srez_number} сont on сont.contractid=fin.contract and сont.customerinn=fin.customer_inn
+                      Join nrpz.erc_dwh_con1_kgntv_${srez_number} сont on сont.lotid=fin.lot_id and сont.customerinn=fin.customerinn
                       Join nrpz.erc_dwh_organization_kgntv org On org.inn=сont.customerinn
-                      Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.expensesnumeration
+                      Left Join sppr.dwh_kf_lsr lsr On lsr.exp_code=fin.cvr
                       LEFT JOIN fact ON fact.lot_id = fin.lot_id AND fact.year = fin.year 
                       AND fact.targetexpenseitemcode = fin.targetexpenseitemcode 
                       AND fact.budget_type = fin.budget_type AND fact.expensetypecode = fin.cvr
@@ -98,9 +98,9 @@ left join
                       WHERE fin.budget_type NOT IN ('ОСИЦ','ОСГЗ') 
                       	AND fin.YEAR = 20${year} -- 01.04.25 имеется финансирование на текущий финансовый год
 	                    AND org.role_code IN (1,8) --ИОГВ+ГКУ
-	                    AND (((fin.expensetypecode BETWEEN '200' AND '247' ) 
-	                      	OR (fin.expensetypecode = '323' AND (org.grbs_inn NOT IN ('7825675663') OR (fin.inn = '7806042256' AND fin.targetexpenseitemcode = '031Я240750' AND fin.economiccode = '263'))) --изменения ЦС от 01.01.24 комитет по социальной политике 
-	                      	OR (fin.expensetypecode ='414' OR fin.expensetypecode = '412')) 
+	                    AND (((fin.cvr BETWEEN '200' AND '247' ) 
+	                      	OR (fin.cvr = '323' AND (org.grbs_inn NOT IN ('7825675663') OR (fin.customerinn = '7806042256' AND fin.targetexpenseitemcode = '031Я240750' AND coalesce(fin.kosgucode,lsr.kosgu) = '263'))) --изменения ЦС от 01.01.24 комитет по социальной политике 
+	                      	OR (fin.cvr ='414' OR fin.cvr = '412')) 
 	                      	AND coalesce(fin.kosgucode,lsr.kosgu) NOT IN ('297','298','299','530') -- 267 убираем от 01.04.25
 	                      	AND org.contragent_account NOT IN ('0294002','0294003','0294004','0244001', '0244010','0934044', '0244031')) -- '0934044', '0244031' от 01.04.25
                       ) 
