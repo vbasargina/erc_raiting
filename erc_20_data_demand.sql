@@ -38,7 +38,7 @@ from (select REQNUM, max(publishdate_reqnum) publishdate_reqnum, sop_name_reqnum
 				)srl
 join nrpz.erc_${year}_demand sd on srl.REQNUM = sd.purchasenumber And sd.flag_protocol in ('1','2','3') 
      -- знаменатель (учитываюся минимальные) / числитель письмо от 06.03.2022
-left join (select * from nrpz.erc_${year}_demand where (purchasenumber, flag_protocol) in (select purchasenumber,min(flag_protocol)flag_protocol1 from nrpz.erc_${year}_demand group by purchasenumber)) sd_denominator on srl.REQNUM = sd_denominator.purchasenumber And sd_denominator.flag_protocol in ('1','2','3') and sd_denominator.prolonflag is null
+left join (select * from nrpz.erc_${year}_demand where (purchasenumber, flag_protocol) in (select purchasenumber,min(flag_protocol)flag_protocol1 from nrpz.erc_${year}_demand group by purchasenumber)) sd_denominator on srl.REQNUM = sd_denominator.purchasenumber And sd_denominator.flag_protocol in ('1','2','3')
      -- числитель (учитываюся итоговые)
 join nrpz.erc_dwh_organization_kgntv dok on dok.id = srl.org_kgntv
 join nrpz.erc_dwh_organization_kgntv dokgrbs on dokgrbs.id = dok.parentid
