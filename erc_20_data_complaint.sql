@@ -15,9 +15,7 @@ select eo.orgtitle fgrbsname,
 	c.prescriptionnumber, 
   c.complaint_publishdate,
 	ais.lotuuid, 
-  ais.requestid,
-	c.sub_fullname,
-	c.sub_inn
+  ais.requestid
 from 
 	(select distinct REQNUM, joflag,
 					case when joflag = 1 then org_kgntv_joflag else grbsid end org_kgntv,
@@ -36,7 +34,7 @@ left join
 		string_agg(requestid::varchar, '; ' order by reqnum) requestid
 	from 
 		(select reqnum,lotuuid,requestid, row_number () over (partition by reqnum order by 1) rn
-			from (select distinct reqnum,lotuuid,requestid  from nrpz.erc_dwh_procedures_kgntv_${srez_number}_6 where reqnum is not null)  p
+			from (select distinct reqnum,lotuuid,requestid  from nrpz.erc_dwh_procedures_kgntv_${srez_number} where reqnum is not null)  p
 		)
 		where rn < 100		
 	group by reqnum
