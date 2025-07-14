@@ -34,7 +34,7 @@ select 	o.grbs_full_name,
 from nrpz.erc_${year}_contract_kg k
 join nrpz.erc_dwh_organization_kgntv o on o.id=k.org_kgntv::int4
 left join (select register_number,max(fact_address_text) fact_address_text,max(address_text) address_text from sppr.eshop_contract where contract_id <> 685655 group by register_number) e on e.register_number = k.rnk
-left join nrpz.erc_dwh_contract_kgntv_${srez_number}_6 c on c.REQUESTID = k.REQUESTID::integer
+left join nrpz.erc_dwh_contract_kgntv_${srez_number} c on c.REQUESTID = k.REQUESTID::integer
 where (singlecustomer_name like('%пункт 4%')or singlecustomer_name like('%пункт 5%')or singlecustomer_name like('%пунктами 4 и 5%') or singlecustomer_name like('%Часть 12 статьи 93 Закона № 44-ФЗ%'));
 
 
