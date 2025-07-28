@@ -103,10 +103,10 @@ From
       													AND con.contractsigndate>=to_date('${start_date}','yyyy-mm-dd') -- 01.04.25 контракт заключен в отчетном периоде по плану-графику текущего финансового года
 
       	  left join (   
-                    Select lotuuid,pg_ikz,pg_rn,Count(*)
+                    Select lotuuid,pg_ikz,pg_rn, delegated, Count(*)
                     From nrpz.ERC_DWH_PROCEDURES_KGNTV_${srez_number}
-                    Group by lotuuid,pg_ikz,pg_rn
+                    Group by lotuuid,pg_ikz,pg_rn, delegated
                 	) pro on con.LOTID = pro.LOTUUID
-      	  where pro.pg_rn like '20${year}%' 
+      	  where pro.pg_rn like '20${year}%' AND delegated != 1 -- убираем переданные полномочия
       ) fin On org.inn=fin.customerinn
 where fin.contractrnk is not NULL;
