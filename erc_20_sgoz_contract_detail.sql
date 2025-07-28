@@ -110,11 +110,12 @@ left join
               ) tar
       	  join  nrpz.erc_dwh_con1_kgntv_${srez_number} con ON con.LOTID = tar.LOT_ID 
       													and stagetitle <> 'Контракт недействителен'       													
-      	  left join ( Select lotuuid, pg_rn, pg_ikz, Count(*) 
+      	  left join ( Select lotuuid, pg_rn, pg_ikz, delegated,Count(*) 
       			  	  From nrpz.ERC_DWH_PROCEDURES_KGNTV_${srez_number}
-      			  	  Group by lotuuid,pg_rn, pg_ikz
+      			  	  Group by lotuuid,pg_rn, pg_ikz, delegated
                 	) pro on con.LOTID = pro.LOTUUID
-          WHERE con.contractsigndate<to_date('${start_date}','yyyy-mm-dd') -- 01.04.25 контракт заключен до начала текущего финансового года
-          OR (pro.pg_rn NOT like '20${year}%' AND con.contractsigndate<to_date('${date}','yyyy-mm-dd'))   --контракт заключен от ПГ не текущего года, но в данном отчетном периоде	
+          WHERE (con.contractsigndate<to_date('${start_date}','yyyy-mm-dd') -- 01.04.25 контракт заключен до начала текущего финансового года
+          OR (pro.pg_rn NOT like '20${year}%' AND con.contractsigndate<to_date('${date}','yyyy-mm-dd')))   --контракт заключен от ПГ не текущего года, но в данном отчетном периоде	
+		AND delegated != 1 -- убираем переданные полномочия
       	 ) fin On org.inn=fin.customerinn
 where fin.contractrnk is not null;
