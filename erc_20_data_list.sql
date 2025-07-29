@@ -1,7 +1,7 @@
 -- Детализация
 truncate table nrpz.erc_${year}_data_list;
 insert into nrpz.erc_${year}_data_list
-select		eo.orgtitle grbstitle, --ГРБС
+select	eo.orgtitle grbstitle, --ГРБС
 		rl.ORG_NAME, --Заказчик
 		rl.ORG_KGNTV, --Заказчик ID
 		rl.PLANNUMBER, --Реестровый номер ПГ
@@ -49,9 +49,9 @@ select		eo.orgtitle grbstitle, --ГРБС
 		rl.pricetype, --Тип определения цены контракта
 		rl.requestid, --ID закупки
 		rl.CNT_MODIF_CON, --Число изменений по контракту
-	    	rl.flag_evasion, --Флаг отклонения/отказа
-	    	rl.type_, --Тип
-	    	rl.lotid, -- ID лота
+	    rl.flag_evasion, --Флаг отклонения/отказа
+	    rl.type_, --Тип
+	    rl.lotid, -- ID лота
 		rl.is_structured_form, --электронный контракт сформирован в структурированном виде
 		-- F2
 		case when rl.flag_comp_reqnum = 1 and (rl.joflag = 1 and rl.org_kgntv_joflag not in (1412, 592) or rl.joflag =0) then 1 else 0 end erc_f2_2,
@@ -61,13 +61,13 @@ select		eo.orgtitle grbstitle, --ГРБС
 		case when rl.rnk is not null and co.rnk is null then 1 else 0 end f3n2,
 		--F9N2
 		case when rl.flag_comp_reqnum = 1 
-		     and rl.sop_name_reqnum is not null
+		and rl.sop_name_reqnum is not null
 		--and (lower(rl.sop_name_reqnum) like '%аукцион%' or lower(rl.sop_name_reqnum) like '%конкурс%'  or lower(rl.sop_name_reqnum) like '%котировок%')
-		     and (case when org_kgntv_joflag in (1412,592)  and joflag = 1 then 1 else 0 end)=0 then 1 else 0 end f9n2, -- 01.01.25 добавлен id=592 (дирекция по закупкам Комитета по здравоохранению)
+		and (case when org_kgntv_joflag in (1412,592)  and joflag = 1 then 1 else 0 end)=0 then 1 else 0 end f9n2, -- 01.01.25 добавлен id=592 (дирекция по закупкам Комитета по здравоохранению)
 		--F10N2
 		case when rl.flag_comp_reqnum = 1 
-		     and rl.sop_name_reqnum is not null
-		     and (case when org_kgntv_joflag in (1412, 592) and joflag = 1 then 1 else 0 end)=0 then 1 else 0 end f10n2, 
+		and rl.sop_name_reqnum is not null
+		and (case when org_kgntv_joflag in (1412, 592) and joflag = 1 then 1 else 0 end)=0 then 1 else 0 end f10n2, 
 		--F11
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and oneex_con is not null then 1 else 0 end f11n1,
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null then 1 else 0 end f11n2,
@@ -76,10 +76,10 @@ select		eo.orgtitle grbstitle, --ГРБС
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and (rl.pricetype is null or (case when  rl.pricetype in ('Максимальное значение цены контракта') then 1 else 0 end)=0) then ck_first else 0 end f14n2,
 		--F15
 		case  when rl.flag_comp_reqnum = 1 and rl.rnk is not null and  rl.flag_evasion = 0 and  lr.ikz_reqnum is not NULL and 
-		case 
-              	--Пункт 1 и 2 (2)
-                When rl.protocoldate_publ Is Null And rl.protocoldate_sign Is Null And rl.protocoldate_One_publ Is Null And rl.protocoldate_One_SIGN Is Null Then 0						
-                When (rl.sop_name_reqnum Like '%Открытый конкурс%')
+			  case 
+              --Пункт 1 и 2 (2)
+                 When rl.protocoldate_publ Is Null And rl.protocoldate_sign Is Null And rl.protocoldate_One_publ Is Null And rl.protocoldate_One_SIGN Is Null Then 0						
+                 When (rl.sop_name_reqnum Like '%Открытый конкурс%')
                     And ((d.purchasenumber Is Not Null  And rl.nmc_reqnum >1000 ) or (rl.nmc_reqnum >250000000 ))And rl.Oneex_cOn Is Not Null
                           And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ)) > (10 || ' days')::interval
                           And date_trunc('day',rl.signdate) <= 
@@ -89,8 +89,8 @@ select		eo.orgtitle grbstitle, --ГРБС
                                                      Select min(t.date_)+20 From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
                                                      Where t1.date_=date_trunc('day',rl.protocoldate_publ))
                                                     )
-                Then 0 
-                When (rl.sop_name_reqnum Like '%лектронный аукцион%')
+                 Then 0 
+                 When (rl.sop_name_reqnum Like '%лектронный аукцион%')
                     And ((d.purchasenumber Is Not Null AND d.num_type = 0 And rl.nmc_reqnum >1000 ) or (rl.nmc_reqnum >250000000 ))And rl.Oneex_cOn Is Not Null
                           And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ)) > (10 || ' days')::interval 
                           And date_trunc('day',rl.signdate) <= 
@@ -100,32 +100,32 @@ select		eo.orgtitle grbstitle, --ГРБС
                                                      Select min(t.date_)+20 From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
                                                      Where t1.date_=date_trunc('day',rl.protocoldate_publ))
                                                     )
-                Then 0  
-              	--Пункт 3
-                When (rl.sop_name_reqnum Like '%лектронный аукцион%' or
+                 Then 0  
+              --Пункт 3
+                 When (rl.sop_name_reqnum Like '%лектронный аукцион%' or
                         rl.sop_name_reqnum Like '%Открытый конкурс%')
-                      And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ) > (10 || ' days')::interval) And  
-                      date_trunc('day',rl.signdate) <= 
-				                 (
-				                  Select min(t.date_)
-				                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+12)
-				                    Where t1.date_>=  (Select min(date_)
-				                    From sppr.work_Days_all
-				                    Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1')
-				                 )                 
+                 And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ) > (10 || ' days')::interval) And  
+                          date_trunc('day',rl.signdate) <= 
+                 (
+                  Select min(t.date_)
+                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+12)
+                    Where t1.date_>=  (Select min(date_)
+                    From sppr.work_Days_all
+                    Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1')
+                 )                 
                  Then 0		
-                 When  (rl.sop_name_reqnum Like 'Запрос котировок в электронной форме%')
-                       and date_trunc('day',rl.signdate)>=date_trunc('day',rl.protocoldate_publ) And
-                       date_trunc('day',rl.signdate) = --17.01.24 изменено условие <=
-				                 (
-				                  Select case when date_trunc('day',rl.protocoldate_publ)<>min(t1.date_) then min(t.date_)-1 else min(t.date_) end
-				                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+3)
-				                    Where t1.date_>=  (Select min(date_)
-				                    From sppr.work_Days_all
-				                    Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1')
-				                 )
-		  Then 0 					
-		  Else 1 END = 1		
+                 When  (lower(rl.sop_name_reqnum) Like 'запрос котировок в электронной форме%')
+                 and date_trunc('day',rl.signdate)>=date_trunc('day',rl.protocoldate_publ) And
+                 date_trunc('day',rl.signdate) = --17.01.24 изменено условие <=
+                 ( SELECT d.date_ FROM nrpz.work_Days_of_2019 d WHERE d.nm =(
+                  Select case when date_trunc('day',rl.protocoldate_publ)<>min(t1.date_) then min(t.nm)-1 else min(t.nm) end
+                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+3)
+                    Where t1.date_>=  (Select min(date_)
+                    From sppr.work_Days_all
+                    Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1'))
+                 )
+				 Then 0 					
+			Else 1 END = 1		
 		Then 1 Else 0 End f15n1,
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.flag_evasion = 0 and lr.ikz_reqnum is not null then 1 else 0 end f15n2
 from nrpz.erc_${year}_list_contract rl
@@ -137,8 +137,8 @@ left join (select min(signdate)signdate,
 				  ikz_reqnum 
 		   from nrpz.erc_${year}_list_contract rl  
 		   where ikz_reqnum is not null group by ikz_reqnum) lr on rl.ikz_reqnum=lr.ikz_reqnum 
-		   	and rl.signdate=lr.signdate 
-		   	and (case when rl.type_ = 'eis' then rl.publishdate_con else rl.signdate end)=lr.publishdate_con
+		   														and rl.signdate=lr.signdate 
+		   														and (case when rl.type_ = 'eis' then rl.publishdate_con else rl.signdate end)=lr.publishdate_con
 left join nrpz.erc_${year}_contract_oneex co on co.rnk = rl.rnk
 left join (Select  purchasenumber, 								
 					min(CASE WHEN title = 'Протокол подведения итогов определения поставщика (подрядчика, исполнителя)' THEN 0
@@ -150,3 +150,4 @@ left join (Select  purchasenumber,
 							  'Протокол рассмотрения и оценки первых частей заявок на участие в открытом конкурсе в электронной форме',
 							  'Протокол рассмотрения и оценки вторых частей заявок на участие в открытом конкурсе в электронной форме')
 			GROUP BY purchasenumber) d On rl.reqnum=d.purchasenumber;
+
