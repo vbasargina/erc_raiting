@@ -73,7 +73,10 @@ SELECT  c.contractrnk rnk,
 		ELSE NULL
 	END AS is_structured_form, --правки от 01.10.24
 		p.requestid,
-		c.contractplaneexecdate executionperiod_end
+		c.contractplaneexecdate executionperiod_end,
+		c.contract_project_number, 
+		c.contract_price_changed_supplier_protocol, 
+		c.justification_contract_price_change
 	From nrpz.erc_dwh_contract_kgntv_${srez_number} c
 	Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} p On (c.lotid = p.lotuuid::int4)	
 	Inner Join (Select Distinct ikz, org_kgntv  From nrpz.erc_${year}_schedule_pos)s On (s.ikz = p.pg_ikz)
