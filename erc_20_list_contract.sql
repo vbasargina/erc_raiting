@@ -27,7 +27,7 @@ WITH con as (SELECT con.rnk,
 				con.penalties_party,
 				con.penalties_amount,
 				con.executionperiod_end ,
-				con.supplier_type,
+				--con.supplier_type,
 				con.supplier_fullname,
 				con.supplier_inn,
 				con.supplier_kpp,
@@ -48,7 +48,10 @@ WITH con as (SELECT con.rnk,
 				con.pricetype,
                 con.lotid, --правки от 30.06.23 добавить lot id
                 con.is_structured_form,
-                con.requestid
+                con.requestid,
+				con.contract_project_number, 
+				con.contract_price_changed_supplier_protocol, 
+				con.justification_contract_price_change
 From nrpz.erc_${year}_contract con	
 Where date_trunc('day',con.signdate) < to_date('${date}','yyyy-mm-dd') --конец отч периода
 ),
@@ -129,7 +132,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -150,7 +153,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_list sch
 Inner Join con on  (sch.joflag = 0 And con.notificationnumber = sch.reqnum And con.lotnumber = sch.lotnumber) --несовместные
 -- 20.07.2022 добавлено ограничение, чтобы попадали закупки по тем ГРБС, которые учитываются в рейтинге			
@@ -227,7 +233,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -248,7 +254,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_list sch
 Inner Join con on (con.positionnumber = sch.positionnumber  And sch.reqnum Is Null) -- ед.поставщик
 -- 20.07.2022 добавлено ограничение, чтобы попадали закупки по тем ГРБС, которые учитываются в рейтинге			
@@ -325,7 +334,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -346,7 +355,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_list sch
 Inner Join con on (sch.joflag = 1 And con.notificationnumber = sch.reqnum And con.lotnumber = sch.lotnumber And con.org_kgntv_contract = sch.org_kgntv) --совместная, у которых есть контракт
 -- 20.07.2022 добавлено ограничение, чтобы попадали закупки по тем ГРБС, которые учитываются в рейтинге			
@@ -423,7 +435,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -444,7 +456,10 @@ Select
     con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_list sch
 Left Join con on (sch.joflag = 1 And con.notificationnumber = sch.reqnum And con.lotnumber = sch.lotnumber And con.org_kgntv_contract = sch.org_kgntv) --совместная joflag=1, у которых **нет ещё** контракта
 -- 20.07.2022 добавлено ограничение, чтобы попадали закупки по тем ГРБС, которые учитываются в рейтинге			
@@ -522,7 +537,7 @@ Select
 	NULL penalties_party,
 	Null::NUMERIC(24,4) penalties_amount,
 	NULL::timestamp plan_execution_date_con,
-	NULL supplier_type,
+	--NULL supplier_type,
 	NULL supplier_fullname,
 	NULL supplier_inn,
 	NULL supplier_kpp,
@@ -543,7 +558,10 @@ Select
 	NULL pricetype,
     NULL::int4 lotid,
     NULL is_structured_form,
-	NULL::int4 requestid
+	NULL::int4 requestid,
+	NULL contract_project_number, 
+	NULL::boolean contract_price_changed_supplier_protocol, 
+	NULL justification_contract_price_change
 From nrpz.erc_${year}_list sch
 -- 20.07.2022 добавлено ограничение, чтобы попадали закупки по тем ГРБС, которые учитываются в рейтинге			
 inner join nrpz.erc_dwh_organization_kgntv dok on sch.org_kgntv = dok.id
@@ -627,7 +645,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -648,7 +666,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_schedule_pos sch
 Inner Join nrpz.erc_${year}_contract con On (con.ikz = sch.ikz) --закупки (икз) у которых есть контракты, которых нет в list + не берем аукц. в электрон форме
 Where con.rnk not in (Select Distinct rnk 
@@ -726,7 +747,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -747,7 +768,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_contract con
 Inner Join nrpz.erc_dwh_organization_kgntv o On con.org_spz = o.spz And o.id not in (3039,2913,31344,2998,3020,2901,3024,2994,7817,3774,29714,3127,3128,3132,3133,2147,3011,1556,10288,87212,1610)
 Inner Join nrpz.erc_dwh_organization_kgntv dokgrbs   On dokgrbs.id = o.parentid -- And dokgrbs.id <> 3039 хз нужен этот грбс или нет в рейтинге не учитывается 
@@ -828,7 +852,7 @@ Select
 	con.penalties_party,
 	con.penalties_amount,
 	con.executionperiod_end plan_execution_date_con,
-	con.supplier_type,
+	--con.supplier_type,
 	con.supplier_fullname,
 	con.supplier_inn,
 	con.supplier_kpp,
@@ -849,7 +873,10 @@ Select
 	con.pricetype,
     con.lotid, --правки от 30.06.23 добавить lot id
     con.is_structured_form,
-    con.requestid
+    con.requestid,
+	con.contract_project_number, 
+	con.contract_price_changed_supplier_protocol, 
+	con.justification_contract_price_change
 From nrpz.erc_${year}_schedule_pos sch
 Inner Join nrpz.erc_${year}_contract con On sch.positionnumber=con.positionnumber --позиции у которых есть контракты, которых нет в list + не берем аукц. в электрон форме
 Where  con.rnk not in (Select 
@@ -887,7 +914,7 @@ penalties_type=null,
 penalties_party=null,
 penalties_amount=null,
 plan_execution_date_con=null,
-supplier_type=null,
+--supplier_type=null,
 supplier_fullname=null,
 supplier_inn=null,
 supplier_kpp=null,
@@ -908,7 +935,9 @@ flag_evasion=null,
 pricetype=null,
 lotid=NULL,
 is_structured_form=NULL,
-requestid=NULL
+requestid=NULL,
+contract_project_number = NULL, 
+justification_contract_price_change = NULL
 Where date_trunc('day',publishdate_con)>to_date('${date2}','YYYY-MM-DD') and date_trunc('day', publishdate)< to_date('${date}','YYYY-MM-DD');
 -- Для закупок, которые опубликованы в отчетном периоде, а информация по контрактам опубликована вне отчетного периода	делаем update по столбцам контракта
 
@@ -918,3 +947,4 @@ where reqnum is null and rnk is null; --записи у которых нет и
 Delete From nrpz.erc_${year}_list_contract Where date_trunc('day',publishdate_con)>to_date('${date2}','YYYY-MM-DD') and date_trunc('day',publishdate)>to_date('${date}','YYYY-MM-DD');
 
 Delete From nrpz.erc_${year}_list_contract  where  grbsid=1894;
+
