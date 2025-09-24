@@ -41,6 +41,7 @@ c.price,
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
+date_trunc('day',c.executionperiod_end) executionperiod_end,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -101,6 +102,7 @@ c.price,
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
+date_trunc('day',c.executionperiod_end) executionperiod_end,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -140,7 +142,8 @@ notice As
 	c.schedule_year,
 	c.protocoldate,
 	c.price,
-	c.stage,		
+	c.stage,
+	c.executionperiod_end,		
 	c.supplier_fullname,
 	c.supplier_inn,
 	c.supplier_kpp,
@@ -163,7 +166,10 @@ notice As
 		WHEN c_ais.is_structured_form='t' THEN 'Да'
 		ELSE NULL
 	END AS is_structured_form, --правки от 01.10.24
-	c_ais.requestid
+	c_ais.requestid,
+	c_ais.contract_project_number, 
+   	c_ais.contract_price_changed_supplier_protocol, 
+   	c_ais.justification_contract_price_change
  From con c
  Inner Join nrpz.erc_dwh_organization_kgntv  org On c.customer_regnum = org.spz AND c.customer_inn!='7815000870' --16.02.24 убираем ИАЦ
  Left Join nrpz.contract_single_supp_reasons rs On rs.code_oos = c.singlecustomer And rs.actual = '1'
@@ -171,10 +177,13 @@ notice As
 				c.contractrnk rnk,
 				c.lotid, --правки от 30.06.23 добавить lot id
 				p.requestid,
-   				is_structured_form --правки от 01.10.24
+   				is_structured_form, --правки от 01.10.24
+   				c.contract_project_number, 
+   				c.contract_price_changed_supplier_protocol, 
+   				c.justification_contract_price_change
 			From nrpz.erc_dwh_contract_kgntv_${srez_number} c  
 			Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} p On (c.lotid = p.lotuuid::int4)
-			Group By c.contractrnk,c.lotid,is_structured_form,p.requestid
+			Group By c.contractrnk,c.lotid,is_structured_form,p.requestid,contract_project_number, contract_price_changed_supplier_protocol, justification_contract_price_change
 			)c_ais On (c_ais.rnk = c.rnk)
 Left Join (Select 
 				reqnum,  
@@ -364,7 +373,11 @@ Select
 		Else 0 end flag_evasion,
 	n_first.lotid, --правки от 30.06.23 добавить lot id
 	n_first.is_structured_form,
-	n_first.requestid
+	n_first.requestid,
+	n_last.executionperiod_end,
+	n_first.contract_project_number, 
+   	n_first.contract_price_changed_supplier_protocol, 
+   	n_first.justification_contract_price_change
 From notice n_first  
 Inner Join notice n_last On (n_last.notice = 1 And n_first.rnk = n_last.rnk)
 Left JOIN cn On (n_first.rnk = cn.rnk)
