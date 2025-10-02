@@ -25,10 +25,11 @@ Select fin.customerinn,
        fin.targetexpenseitemcode, 
        fin.cvr, 
        fin.kosgu,
-       fin.finsum fin_before
+       fin.finsum fin_before,
+	   org.iku
 From
       (
-         select distinct dok.id, dok.inn
+         select distinct dok.id, dok.inn, dok.iku
          from nrpz.erc_dwh_organization_kgntv dok
          join nrpz.erc_dwh_organization_kgntv dokgrbs	on dokgrbs.id = dok.parentid
          join nrpz.ERC_ORGANIZATION eo	on eo.spz = dokgrbs.spz
