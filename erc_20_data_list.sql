@@ -72,9 +72,9 @@ select	eo.orgtitle grbstitle, --ГРБС
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and oneex_con is not null then 1 else 0 end f11n1,
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null then 1 else 0 end f11n2,
 		--F14
-		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and contract_price_changed_supplier_protocol is true and justification_contract_price_change = '10'
+		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10'
 				 and (rl.pricetype is null or (case when  rl.pricetype in ('Максимальное значение цены контракта') then 1 else 0 end)=0) then rl.nmc_reqnum else 0 end f14n1,
-		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and contract_price_changed_supplier_protocol is true and justification_contract_price_change = '10'
+		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10'
 				 and (rl.pricetype is null or (case when  rl.pricetype in ('Максимальное значение цены контракта') then 1 else 0 end)=0) then ck_first else 0 end f14n2,
 		--F15
 		case  when rl.flag_comp_reqnum = 1 and rl.rnk is not null and  rl.flag_evasion = 0 and  lr.ikz_reqnum is not NULL and 
@@ -129,7 +129,11 @@ select	eo.orgtitle grbstitle, --ГРБС
 				 Then 0 					
 			Else 1 END = 1		
 		Then 1 Else 0 End f15n1,
-		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.flag_evasion = 0 and lr.ikz_reqnum is not null then 1 else 0 end f15n2
+		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.flag_evasion = 0 and lr.ikz_reqnum is not null then 1 else 0 end f15n2,
+		rl.flag_cans_reqnum,
+		rl.contract_project_number,
+		rl.contract_price_changed_supplier_protocol,
+		rl.justification_contract_price_change
 from nrpz.erc_${year}_list_contract rl
 join nrpz.erc_dwh_organization_kgntv dok on dok.id = rl.org_kgntv
 join nrpz.erc_dwh_organization_kgntv dokgrbs on dokgrbs.id = dok.parentid
