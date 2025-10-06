@@ -14,7 +14,7 @@ select 	o.grbs_full_name,
 		k.F_productprice,
 		k.price,
 		k.price_cur,
-		case when k.is_concluded_in_e_shop is not null or singlecustomer_name like('%пунктами 4 и 5%') then 1 else null end bra1,
+		case when k.is_concluded_in_e_shop is not null or singlecustomer_name like('%пунктами 4 и 5%') or is_structured_form = 'Да' then 1 else null end bra1,
 		1 bra2,
 		k.OBJECT_NAME,
 		k.PLACINGWAY_NAME,
@@ -30,7 +30,8 @@ select 	o.grbs_full_name,
         case when length(coalesce(supplierinn,'0')) = 10 and substring(supplierkpp,1,2) = '78' then 'Да'
              when length(coalesce(supplierinn,'0')) = 10 and substring(supplierkpp,1,2) <> '78' then 'Нет'
              when length(coalesce(supplierinn,'0')) <> 10  and substring(coalesce(e.fact_address_text, c.SUPPLIERADDRESS_FACT),1,2) = '19' then 'Да'
-        else 'Нет' end) else null end mest_post 
+        else 'Нет' end) else null end mest_post,
+		is_structured_form 
 from nrpz.erc_${year}_contract_kg k
 join nrpz.erc_dwh_organization_kgntv o on o.id=k.org_kgntv::int4
 left join (select register_number,max(fact_address_text) fact_address_text,max(address_text) address_text from sppr.eshop_contract where contract_id <> 685655 group by register_number) e on e.register_number = k.rnk
