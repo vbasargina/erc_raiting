@@ -56,9 +56,9 @@ select	eo.orgtitle grbstitle, --ГРБС
 		-- F2
 		case when rl.flag_comp_reqnum = 1 and (rl.joflag = 1 and rl.org_kgntv_joflag not in (1412, 592) or rl.joflag =0) then 1 else 0 end erc_f2_2,
 		case when rl.flag_comp_reqnum = 1 and rl.flag_cans_reqnum = 1 and (rl.joflag = 1 and rl.org_kgntv_joflag not in (1412, 592) or rl.joflag =0) then 1 else 0 end  erc_f2_1,
-		--F3
+		--F3N1
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null then 1 else 0 end f3n1,
-		case when rl.rnk is not null and co.rnk is null then 1 else 0 end f3n2,
+		--case when rl.rnk is not null and co.rnk is null then 1 else 0 end f3n2,
 		--F9N2
 		case when rl.flag_comp_reqnum = 1 
 		and rl.sop_name_reqnum is not null
@@ -72,9 +72,11 @@ select	eo.orgtitle grbstitle, --ГРБС
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and oneex_con is not null then 1 else 0 end f11n1,
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null then 1 else 0 end f11n2,
 		--F14
-		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10'
+		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null 
+				 and (case when rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10' then 1 else 0 end)=0
 				 and (rl.pricetype is null or (case when  rl.pricetype in ('Максимальное значение цены контракта') then 1 else 0 end)=0) then rl.nmc_reqnum else 0 end f14n1,
-		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10'
+		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null 
+				 and (case when rl.rnk is not null and rl.contract_project_number is not null and rl.contract_price_changed_supplier_protocol is true and rl.justification_contract_price_change = '10' then 1 else 0 end)=0
 				 and (rl.pricetype is null or (case when  rl.pricetype in ('Максимальное значение цены контракта') then 1 else 0 end)=0) then ck_first else 0 end f14n2,
 		--F15
 		case  when rl.flag_comp_reqnum = 1 and rl.rnk is not null and  rl.flag_evasion = 0 and  lr.ikz_reqnum is not NULL and 
@@ -132,8 +134,21 @@ select	eo.orgtitle grbstitle, --ГРБС
 		case when rl.flag_comp_reqnum = 1 and rl.rnk is not null and rl.flag_evasion = 0 and lr.ikz_reqnum is not null then 1 else 0 end f15n2,
 		rl.flag_cans_reqnum,
 		rl.contract_project_number,
-		rl.contract_price_changed_supplier_protocol,
-		rl.justification_contract_price_change
+		CASE 
+			WHEN rl.contract_price_changed_supplier_protocol IS TRUE THEN 'Да'
+			ELSE 'Нет'
+		END contract_price_changed_supplier_protocol,
+		CASE 
+			WHEN rl.justification_contract_price_change ='1' THEN 'Не указано'
+			WHEN rl.justification_contract_price_change ='2' THEN 'Изменение более чем на 10% стоимости планируемых к приобретению товаров, работ, услуг, выявленные в результате подготовки к размещению конкретного заказа'
+			WHEN rl.justification_contract_price_change ='3' THEN 'Изменение планируемых сроков приобретения товаров, работ, услуг, способа размещения заказа, срока исполнения контракта.'
+			WHEN rl.justification_contract_price_change ='4' THEN 'Отмена заказчиком, уполномоченным органом предусмотренного планом-графиком размещения заказа.'
+			WHEN rl.justification_contract_price_change ='5' THEN 'Образовавшаяся экономия от использования в текущем финансовом году бюджетных ассигнований'
+			WHEN rl.justification_contract_price_change ='6' THEN 'Возникновение непредвиденных обстоятельств'
+			WHEN rl.justification_contract_price_change ='7' THEN 'Выдача предписания уполномоченного органа исполнительной власти об устранении нарушения законодательства РФ'
+			WHEN rl.justification_contract_price_change ='8' THEN 'Изменение по результатам обязательного общественного обсуждения'
+			WHEN rl.justification_contract_price_change ='9' THEN 'Отмена по результатам обязательного общественного обсуждения'
+		END justification_contract_price_change
 from nrpz.erc_${year}_list_contract rl
 join nrpz.erc_dwh_organization_kgntv dok on dok.id = rl.org_kgntv
 join nrpz.erc_dwh_organization_kgntv dokgrbs on dokgrbs.id = dok.parentid
@@ -145,7 +160,7 @@ left join (select min(signdate)signdate,
 		   where ikz_reqnum is not null group by ikz_reqnum) lr on rl.ikz_reqnum=lr.ikz_reqnum 
 		   														and rl.signdate=lr.signdate 
 		   														and (case when rl.type_ = 'eis' then rl.publishdate_con else rl.signdate end)=lr.publishdate_con
-left join nrpz.erc_${year}_contract_oneex co on co.rnk = rl.rnk
+--left join nrpz.erc_${year}_contract_oneex co on co.rnk = rl.rnk
 left join (Select  purchasenumber, 								
 					min(CASE WHEN title = 'Протокол подведения итогов определения поставщика (подрядчика, исполнителя)' THEN 0
 					WHEN title = 'Протокол рассмотрения и оценки первых частей заявок на участие в открытом конкурсе в электронной форме' THEN 1
