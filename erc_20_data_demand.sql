@@ -36,9 +36,9 @@ from (select REQNUM, max(publishdate_reqnum) publishdate_reqnum, sop_name_reqnum
                              when joflag = 1 and org_kgntv_joflag not in  (1412, 592) then org_kgntv_joflag 
                         else org_kgntv end 
 				)srl
-join nrpz.erc_${year}_demand sd on srl.REQNUM = sd.purchasenumber And sd.flag_protocol in ('1','2','3') 
+join nrpz.erc_${year}_demand sd on srl.REQNUM = sd.purchasenumber And sd.flag_protocol in ('1','2','3')
      -- знаменатель (учитываюся минимальные) / числитель письмо от 06.03.2022
-left join (select * from nrpz.erc_${year}_demand where (purchasenumber, flag_protocol) in (select purchasenumber,min(flag_protocol)flag_protocol1 from nrpz.erc_${year}_demand group by purchasenumber)) sd_denominator on srl.REQNUM = sd_denominator.purchasenumber And sd_denominator.flag_protocol in ('1','2','3')
+left join (select * from nrpz.erc_${year}_demand where (purchasenumber, flag_protocol) in (select purchasenumber,min(flag_protocol)flag_protocol1 from nrpz.erc_${year}_demand group by purchasenumber)) sd_denominator on srl.REQNUM = sd_denominator.purchasenumber And sd_denominator.flag_protocol in ('1','2','3') 
      -- числитель (учитываюся итоговые)
 join nrpz.erc_dwh_organization_kgntv dok on dok.id = srl.org_kgntv
 join nrpz.erc_dwh_organization_kgntv dokgrbs on dokgrbs.id = dok.parentid
@@ -67,6 +67,6 @@ left join
 		(select sum(erc.nmc_reqnum) nmc_reqnum, 
 				sum(erc.ck_first) ck_first, 
 				erc.reqnum 
-			from nrpz.erc_25_list_contract erc
+			from nrpz.erc_${year}_list_contract erc
 			where erc.flag_comp_reqnum = 1 
 			group by erc.reqnum )erc on erc.reqnum = d.reqnum;
