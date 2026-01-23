@@ -88,9 +88,9 @@ select	eo.orgtitle grbstitle, --ГРБС
                           And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ)) > (10 || ' days')::interval
                           And date_trunc('day',rl.signdate) <= 
                                                     (
-                                                     Select min(t.date_) From nrpz.work_Days_of_2019 t
+                                                     Select min(t.date_) From sppr.work_days_of t
                                                      Where t.date_>=(
-                                                     Select min(t.date_)+20 From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
+                                                     Select min(t.date_)+20 From sppr.work_days_of t Inner Join sppr.work_days_of t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
                                                      Where t1.date_=date_trunc('day',rl.protocoldate_publ))
                                                     )
                  Then 0 
@@ -99,9 +99,9 @@ select	eo.orgtitle grbstitle, --ГРБС
                           And (date_trunc('day', rl.signdate) - date_trunc('day',rl.protocoldate_publ)) > (10 || ' days')::interval 
                           And date_trunc('day',rl.signdate) <= 
                                                     (
-                                                     Select min(t.date_) From nrpz.work_Days_of_2019 t
+                                                     Select min(t.date_) From sppr.work_days_of t
                                                      Where t.date_>=(
-                                                     Select min(t.date_)+20 From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
+                                                     Select min(t.date_)+20 From sppr.work_days_of t Inner Join sppr.work_days_of t1 On (t.date_>t1.date_ And t.nm=t1.nm+17) --05.07.23 8 дней 
                                                      Where t1.date_=date_trunc('day',rl.protocoldate_publ))
                                                     )
                  Then 0  
@@ -112,7 +112,7 @@ select	eo.orgtitle grbstitle, --ГРБС
                           date_trunc('day',rl.signdate) <= 
                  (
                   Select min(t.date_)
-                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+12)
+                    From sppr.work_days_of t Inner Join sppr.work_days_of t1 On (t.date_>t1.date_ And t.nm=t1.nm+12)
                     Where t1.date_>=  (Select min(date_)
                     From sppr.work_Days_all
                     Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1')
@@ -121,9 +121,9 @@ select	eo.orgtitle grbstitle, --ГРБС
                  When  (lower(rl.sop_name_reqnum) Like 'запрос котировок в электронной форме%')
                  and date_trunc('day',rl.signdate)>=date_trunc('day',rl.protocoldate_publ) And
                  date_trunc('day',rl.signdate) = --17.01.24 изменено условие <=
-                 ( SELECT d.date_ FROM nrpz.work_Days_of_2019 d WHERE d.nm =(
+                 ( SELECT d.date_ FROM sppr.work_days_of d WHERE d.nm =(
                   Select case when date_trunc('day',rl.protocoldate_publ)<>min(t1.date_) then min(t.nm)-1 else min(t.nm) end
-                    From nrpz.work_Days_of_2019 t Inner Join nrpz.work_Days_of_2019 t1 On (t.date_>t1.date_ And t.nm=t1.nm+3)
+                    From sppr.work_days_of t Inner Join sppr.work_days_of t1 On (t.date_>t1.date_ And t.nm=t1.nm+3)
                     Where t1.date_>=  (Select min(date_)
                     From sppr.work_Days_all
                     Where DATE_ >= (date_trunc('day',rl.protocoldate_publ)) And type='1'))
