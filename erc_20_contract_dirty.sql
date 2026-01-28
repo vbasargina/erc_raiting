@@ -56,7 +56,7 @@ date_trunc('day', c.executions_date) executions_date,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
-WHERE c.name Like '%contract' 
+WHERE (c.name Like '%contract' and c.name != 'closedContract')
 And c.signdate >= to_date('${start_date}','yyyy-mm-dd') 
 And c.signdate <= to_date('${date}','yyyy-mm-dd')
 And c.publishdate <= to_date('${date2}','yyyy-mm-dd')
@@ -117,7 +117,7 @@ date_trunc('day', c.executions_date) executions_date,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
-WHERE c.name Like '%contract' 
+WHERE (c.name Like '%contract' and c.name != 'closedContract')
 And c.signdate >= to_date('${start_date}','yyyy-mm-dd') 
 And c.signdate <= to_date('${date}','yyyy-mm-dd')
 And c.publishdate <= to_date('${date2}','yyyy-mm-dd')
@@ -169,7 +169,8 @@ notice As
 	c_ais.requestid,
 	c_ais.contract_project_number, 
    	c_ais.contract_price_changed_supplier_protocol, 
-   	c_ais.justification_contract_price_change
+   	c_ais.justification_contract_price_change,
+	c_ais.successdate
  From con c
  Inner Join nrpz.erc_dwh_organization_kgntv  org On c.customer_regnum = org.spz AND c.customer_inn!='7815000870' --16.02.24 убираем ИАЦ
  Left Join nrpz.contract_single_supp_reasons rs On rs.code_oos = c.singlecustomer And rs.actual = '1'
@@ -180,10 +181,11 @@ notice As
    				is_structured_form, --правки от 01.10.24
    				c.contract_project_number, 
    				c.contract_price_changed_supplier_protocol, 
-   				c.justification_contract_price_change
+   				c.justification_contract_price_change,
+				c.firstnoticedate as successdate
 			From nrpz.erc_dwh_contract_kgntv_${srez_number} c  
 			Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} p On (c.lotid = p.lotuuid::int4)
-			Group By c.contractrnk,c.lotid,is_structured_form,p.requestid,contract_project_number, contract_price_changed_supplier_protocol, justification_contract_price_change
+			Group By c.contractrnk,c.lotid,is_structured_form,p.requestid,contract_project_number, contract_price_changed_supplier_protocol, justification_contract_price_change, c.firstnoticedate
 			)c_ais On (c_ais.rnk = c.rnk)
 Left Join (Select 
 				reqnum,  
@@ -210,7 +212,7 @@ cn AS (Select
 					versionnumber ,
 					publishdate 
 				 From nrpz.dwh_contract_notice_nrpz_acgz cn 
-				 Where cn.name like '%contract' 
+				 Where (c.name Like '%contract' and c.name != 'closedContract') 
 				 And cn.publishdate < to_date('${date2}','yyyy-mm-dd')
 				 And cn.changetype_tag IS NOT null 
 				)s 
@@ -296,9 +298,9 @@ prot_one AS (Select
 		 And canc.protocolnumber Is Null
 		Group By p.purchasenumber
 		),
-mess AS (Select 	contract_rnk rnk,
+/*mess AS (Select 	contract_rnk rnk,
 			successdate  -- считать от успешной даты  первой отправки сведений на ЕИС/ Письмо от 05.08.2020 считается от успешной отправки сведений в ЕИС
-From nrpz.erc_${year}_contract_mess),
+From nrpz.erc_${year}_contract_mess),*/
 peva AS 
 (Select Distinct a.purchasenumber
              From 
@@ -363,7 +365,7 @@ Select
 	prot.protocoldate_sign,
 	prot_one.protocoldate_publ protocoldate_one_publ,
 	prot_one.protocoldate_sign protocoldate_one_sign,
-	mess.successdate firstnoticesuccesdate,
+	n_first.successdate firstnoticesuccesdate,
 	Case 
 		When regexp_like(Case When n_first.singlecustomer_name Is Null Then n_last.singlecustomer_name else n_first.singlecustomer_name end,'(^Часть 1 пункт (4|5|23|42|44|46) статьи 93)') Then 0 --Правки от 30.06.23 убран пункт 45
 		Else 1 End flag_16,
@@ -384,6 +386,6 @@ Left JOIN cn On (n_first.rnk = cn.rnk)
 Left Join c_proc On c_proc.rnk = n_first.rnk        
 Left JOIN prot On (prot.notificationnumber = n_first.notificationnumber)      
 Left JOIN prot_one On (prot_one.notificationnumber = n_first.notificationnumber)
-Left JOIN mess On mess.rnk = n_first.rnk
+--Left JOIN mess On mess.rnk = n_first.rnk
 Left JOIN peva On (peva.purchasenumber = n_first.notificationnumber) -- изменение от 06.12.21
 Where n_first.notice = 0;
