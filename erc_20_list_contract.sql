@@ -53,7 +53,7 @@ WITH con as (SELECT con.rnk,
 				con.contract_price_changed_supplier_protocol, 
 				con.justification_contract_price_change
 From nrpz.erc_${year}_contract con	
-Where date_trunc('day',con.signdate) < to_date('${date}','yyyy-mm-dd') --конец отч периода
+Where con.signdate::date < to_date('${date}','yyyy-mm-dd') --конец отч периода
 ),
 contracts AS (
     SELECT DISTINCT
@@ -62,7 +62,7 @@ contracts AS (
         con.notificationnumber,
         con.lotnumber
     FROM nrpz.erc_${year}_contract con
-    WHERE date_trunc('day', con.signdate) < to_date('${date}', 'yyyy-mm-dd')
+    WHERE con.signdate::date < to_date('${date}', 'yyyy-mm-dd')
 )
 -- 1 блок
 Select
@@ -676,7 +676,7 @@ Where con.rnk not in (Select Distinct rnk
 					  From nrpz.erc_${year}_list_contract
 					  Where rnk Is Not Null)
 And con.sop_name<>'аукцион в электронной форме' 
-And date_trunc('day',con.signdate)<to_date('${date}','yyyy-mm-dd');
+And con.signdate::date<to_date('${date}','yyyy-mm-dd');
 
 Insert Into nrpz.erc_${year}_list_contract
 Select  
@@ -780,9 +780,9 @@ Inner Join nrpz.erc_dwh_contract_kgntv_${srez_number} cont On cont.contractrnk=c
 Inner Join nrpz.erc_dwh_procedures_kgntv_${srez_number} proc On proc.lotuuid::int4=cont.lotid
 Inner Join nrpz.erc_${year}_schedule_pos sch On sch.ikz=proc.pg_ikz And con.notificationnumber Is Null And con.positionnumber Is Null
 Left Join nrpz.erc_${year}_list_contract t On t.rnk=con.rnk
-Where t.rnk Is Null And date_trunc('day', con.signdate) < to_date('${date}','yyyy-mm-dd'); --контракты из среза, если вдруг не попали ранее
+Where t.rnk Is Null And  con.signdate::date < to_date('${date}','yyyy-mm-dd'); --контракты из среза, если вдруг не попали ранее
 
-/*
+
 Insert Into nrpz.erc_${year}_list_contract
 Select 
 	Distinct sch.org_name,
@@ -883,9 +883,9 @@ Where  con.rnk not in (Select
 							Distinct rnk 
 					   From nrpz.erc_${year}_list_contract
 					   Where rnk Is Not Null)
-And con.sop_name<>'аукцион в электронной форме'
-And date_trunc('day',con.signdate) < to_date('${date}','yyyy-mm-dd');
-*/
+And (con.sop_name<>'аукцион в электронной форме' or con.sop_name is null)
+And con.signdate::date < to_date('${date}','yyyy-mm-dd');
+
 
 
 UPDATE nrpz.erc_${year}_list_contract
@@ -939,14 +939,14 @@ is_structured_form=NULL,
 requestid=NULL,
 contract_project_number = NULL, 
 justification_contract_price_change = NULL
-Where date_trunc('day',publishdate_con)>to_date('${date2}','YYYY-MM-DD') and date_trunc('day', publishdate)< to_date('${date}','YYYY-MM-DD');
+where publishdate_con::date>to_date('${date2}','YYYY-MM-DD') and publishdate::date< to_date('${date}','YYYY-MM-DD');
 -- Для закупок, которые опубликованы в отчетном периоде, а информация по контрактам опубликована вне отчетного периода	делаем update по столбцам контракта
 
 DELETE from nrpz.erc_${year}_list_contract
 where 
 grbsid=1894
-or (reqnum is null and rnk is null); --записи у которых нет извещения и нет контракта
-or date_trunc('day',publishdate_con)>to_date('${date2}','YYYY-MM-DD') and date_trunc('day',publishdate)>to_date('${date}','YYYY-MM-DD'));
+or (reqnum is null and rnk is null) --записи у которых нет извещения и нет контракта
+or (publishdate_con::date>to_date('${date2}','YYYY-MM-DD') and publishdate::date>to_date('${date}','YYYY-MM-DD'));
 
 --правка 3.1 3 кв 2025, котнтракты с конкурентным СОП
 UPDATE nrpz.erc_${year}_list_contract
@@ -1020,4 +1020,3 @@ WHERE rnk IN ('2780213982825000026',
 '2780213982825000020',
 '2780213982825000024',
 '2782512811725000018');
-

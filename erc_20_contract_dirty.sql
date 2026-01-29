@@ -7,7 +7,7 @@ SELECT * FROM
 c.regnum rnk,
 c.number_ rnk_number,
 c.purchasecode ikz,
-date_trunc('day',c.signdate) signdate,
+c.signdate::date,
 c.publishdate,
 c.versionnumber,
 c.notificationnumber,
@@ -41,7 +41,7 @@ c.price,
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
-date_trunc('day',c.executionperiod_end) executionperiod_end,
+c.executionperiod_end::date,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -52,7 +52,7 @@ c.customer_regnum org_spz,
 c.id,
 c.positionnumber,
 c.pricetype,
-date_trunc('day', c.executions_date) executions_date,
+c.executions_date::date,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
@@ -68,7 +68,7 @@ SELECT DISTINCT ON (c.regnum)
 c.regnum rnk,
 c.number_ rnk_number,
 c.purchasecode ikz,
-date_trunc('day',c.signdate) signdate,
+c.signdate::date,
 c.publishdate,
 c.versionnumber,
 c.notificationnumber,
@@ -102,7 +102,7 @@ c.price,
 		When c.currentcontractstage = 'ec' Then 'исполнение завершено'
 		When c.currentcontractstage = 'in' Then 'aннулировано'
 		Else Null End stage,
-date_trunc('day',c.executionperiod_end) executionperiod_end,
+c.executionperiod_end::date,
 c.supplier_fullname,
 c.supplier_inn,
 c.supplier_kpp,
@@ -113,7 +113,7 @@ c.customer_regnum org_spz,
 c.id,
 c.positionnumber,
 c.pricetype,
-date_trunc('day', c.executions_date) executions_date,
+c.executions_date::date,
 c.customer_regnum,
 c.customer_inn
 FROM nrpz.dwh_contract_notice_nrpz_acgz c
@@ -212,7 +212,7 @@ cn AS (Select
 					versionnumber ,
 					publishdate 
 				 From nrpz.dwh_contract_notice_nrpz_acgz cn 
-				 Where (c.name Like '%contract' and c.name != 'closedContract') 
+				 Where (cn.name Like '%contract' and cn.name != 'closedContract') 
 				 And cn.publishdate < to_date('${date2}','yyyy-mm-dd')
 				 And cn.changetype_tag IS NOT null 
 				)s 

@@ -1,19 +1,3 @@
--- правки П7.2 и П7.4 за 1 кв. 2025, добавить lotid, requestid, is_structured_form
-
-
-UPDATE nrpz.erc_${year}_contract_dirty
-SET (lotid, requestid, is_structured_form) = (5596558, 5360758, 'Нет')
-WHERE rnk = '2780514918025000006';
-
-UPDATE nrpz.erc_${year}_contract_dirty
-SET (lotid, requestid, is_structured_form) = (5592247,5356447, 'Нет')
-WHERE rnk = '2780604059425000003';
-
-UPDATE nrpz.erc_${year}_contract_dirty
-SET (lotid, requestid, is_structured_form) = (5612176,5376376, 'Нет')
-WHERE rnk = '2781402705025000125';
-
-
 -- правки П7.3 за 1 кв. 2025, неправильная дата заключения контракта
 UPDATE nrpz.erc_${year}_contract_dirty
 SET signdate = con.contractsigndate
@@ -43,8 +27,8 @@ WHERE con.contractrnk = rnk;
 -- Чистим erc_${year}_contract_dirty
 
 
-delete from nrpz.erc_${year}_contract_dirty where date_trunc('day', signdate)>=to_date('${date}','yyyy-mm-dd'); --конец отчетного периода
-delete from nrpz.erc_${year}_contract_dirty where date_trunc('day', signdate)<to_date('${start_date}','yyyy-mm-dd'); --начало отчетного периода
+delete from nrpz.erc_${year}_contract_dirty where signdate::date>=to_date('${date}','yyyy-mm-dd'); --конец отчетного периода
+delete from nrpz.erc_${year}_contract_dirty where  signdate::date<to_date('${start_date}','yyyy-mm-dd'); --начало отчетного периода
 delete from nrpz.erc_${year}_contract_dirty
 where org_inn in ('7822002853', '7806143720', '7806143737', '7802215268', '7802215250', 
 '7817044400', '7819029196', '7805283280', '7807053821', '7807053839', '7805283273', '7810293894', '7810293904', 

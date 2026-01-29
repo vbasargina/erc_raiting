@@ -29,7 +29,7 @@ SELECT  c.contractrnk rnk,
 		    Else 'Исполнение' End stage,		
 		c.contractactualexecdate executions_date,
 		Case 
-			When date_trunc('day', c.contractrejectdate)>=to_date('${date}','yyyy-mm-dd') Then Null --конец отчетного периода
+			When  c.contractrejectdate::date>=to_date('${date}','yyyy-mm-dd') Then Null --конец отчетного периода
 			Else c.contractrejectdate End rejected_date, 
 		c.contractactualpaid rejected_paid,
 		Null rejected_reason,
@@ -60,7 +60,7 @@ SELECT  c.contractrnk rnk,
 		prot.protocoldate_sign,
 		prot_one.protocoldate_publ protocoldate_one_publ,
 		prot_one.protocoldate_sign protocoldate_one_sign,
-		mess.successdate firstnoticesuccesdate,
+		c.firstnoticedate firstnoticesuccesdate,
 		1 flag_16,
 		coalesce(cn.cnt_modif,0) cnt_modif,
 		Case 
@@ -106,12 +106,12 @@ SELECT  c.contractrnk rnk,
 					) 
 			   Group By rnk
 		       )cn On (cn.rnk = c.contractrnk)
-	Left Join (Select 
+	/*Left Join (Select 
   				    contract_rnk rnk, 
 				    min(date_) successdate --изменение с successdate на date_ от 14/08/2018 Терехова
 			   From nrpz.erc_${year}_contract_mess 
 			   Group By contract_rnk
-	           )mess On (mess.rnk = c.contractrnk)
+	           )mess On (mess.rnk = c.contractrnk)*/
 	Left Join (Select  
 					p.purchasenumber numb,
 					max ( p.protocoldate) protocoldate_publ,
